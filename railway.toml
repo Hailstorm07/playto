@@ -1,10 +1,7 @@
 [build]
-builder = "nixpacks"
-buildCommand = "bash ./build.sh"
+builder = "dockerfile"
+dockerfile = "Dockerfile"
 
 [deploy]
-startCommand = "cd backend && gunicorn playto_pay.wsgi --log-file -"
+startCommand = "gunicorn playto_pay.wsgi --bind 0.0.0.0:8000 --log-file -"
 restartPolicyMaxRetries = 5
-
-[[services]]
-name = "web"
