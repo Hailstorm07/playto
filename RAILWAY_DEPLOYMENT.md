@@ -1,26 +1,27 @@
-# Railway Deployment Guide
+# Railway Backend + Vercel Frontend Deployment Guide
 
-This guide explains how to deploy the KYC Management application on Railway.
+This guide deploys only the Django backend on Railway and the Vite React frontend on Vercel.
 
 ## Prerequisites
 
 - Railway account (https://railway.app)
+- Vercel account (https://vercel.com)
 - GitHub repository with this code
 - Git installed locally
 
-## Deployment Steps
+## 1. Deploy Backend On Railway
 
-### 1. Prepare Your Repository
+### Prepare Your Repository
 
 Ensure you have committed all changes:
 
 ```bash
 git add .
-git commit -m "Add Railway deployment configuration"
+git commit -m "Split Railway backend and Vercel frontend deployment"
 git push -u origin main
 ```
 
-### 2. Create a Railway Project
+### Create a Railway Project
 
 1. Go to [Railway Dashboard](https://railway.app/dashboard)
 2. Click "New Project"
@@ -29,28 +30,29 @@ git push -u origin main
 5. Select your repository
 6. Click "Deploy"
 
-### 3. Configure Environment Variables
+Railway uses `railway.json` and the root `Dockerfile`. The Docker image installs only the Django backend.
 
-Once deployed, Railway will automatically:
-- Create a PostgreSQL database
-- Set `DATABASE_URL` environment variable
+### Add PostgreSQL Database
 
-You need to add additional variables in the Railway dashboard:
+1. In Railway project dashboard, click "Add Service"
+2. Select "PostgreSQL"
+3. Railway will automatically set `DATABASE_URL` for the backend service
 
-**Settings → Variables**
+### Configure Railway Environment Variables
 
-Add these environment variables:
+In the backend service, open **Settings -> Variables** and add:
+
+Replace the domains with your actual Railway and Vercel domains.
 
 ```
 DEBUG=False
 SECRET_KEY=generate-a-random-secret-key
-ALLOWED_HOSTS=your-app-name.railway.app,*.railway.app
-CORS_ALLOWED_ORIGINS=https://your-app-name.railway.app
-CSRF_TRUSTED_ORIGINS=https://your-app-name.railway.app
+ALLOWED_HOSTS=your-backend-name.up.railway.app,.railway.app
+CORS_ALLOWED_ORIGINS=https://your-frontend-name.vercel.app
+CSRF_TRUSTED_ORIGINS=https://your-backend-name.up.railway.app,https://your-frontend-name.vercel.app
 SECURE_SSL_REDIRECT=True
 SESSION_COOKIE_SECURE=True
 CSRF_COOKIE_SECURE=True
-VITE_API_URL=https://your-app-name.railway.app
 ```
 
 **To generate a SECRET_KEY:**
@@ -58,41 +60,47 @@ VITE_API_URL=https://your-app-name.railway.app
 python -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
 
-### 4. Add PostgreSQL Database
+### Backend URL
 
-1. In Railway project dashboard, click "Add Service"
-2. Select "PostgreSQL"
-3. Railway will automatically set `DATABASE_URL` environment variable
+After deployment, the API is available at:
 
-### 5. Build Configuration
+```
+https://your-backend-name.up.railway.app/api/v1/
+```
 
-Railway automatically detects:
-- Backend uses Python (from requirements.txt)
-- Frontend uses Node.js (from package.json)
+## 2. Deploy Frontend On Vercel
 
-The `build.sh` script handles:
-- Installing Python dependencies
-- Building the frontend
-- Running Django migrations
-- Collecting static files
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click "Add New..." -> "Project"
+3. Import the same GitHub repository
+4. Set **Root Directory** to `frontend`
+5. Vercel will use `frontend/vercel.json`
+6. Add this environment variable:
 
-### 6. Monitor Deployment
+```
+VITE_API_URL=https://your-backend-name.up.railway.app
+```
+
+7. Deploy
+
+The frontend will call the backend at `${VITE_API_URL}/api/v1/`.
+
+## 3. Update CORS After Vercel Deploys
+
+Once Vercel gives you the final frontend URL, go back to Railway and make sure:
+
+```
+CORS_ALLOWED_ORIGINS=https://your-frontend-name.vercel.app
+CSRF_TRUSTED_ORIGINS=https://your-backend-name.up.railway.app,https://your-frontend-name.vercel.app
+```
+
+Redeploy the Railway backend after changing variables.
+
+## Monitor Deployment
 
 1. Go to Railway project dashboard
 2. Click on the service to view logs
 3. Wait for build to complete (usually 5-10 minutes)
-
-### 7. Access Your Application
-
-Once deployed, your app will be available at:
-```
-https://your-app-name.railway.app
-```
-
-The backend API will be at:
-```
-https://your-app-name.railway.app/api/v1/
-```
 
 ## Troubleshooting
 
@@ -114,18 +122,18 @@ https://your-app-name.railway.app/api/v1/
 - Ensure `python manage.py collectstatic` runs successfully
 - Check that frontend build completes without errors
 
-**Frontend Not Loading:**
-- Verify `VITE_API_URL` environment variable is set correctly
-- Check browser console for CORS errors
+**Frontend Cannot Reach API:**
+- Verify Vercel has `VITE_API_URL=https://your-backend-name.up.railway.app`
+- Verify Railway has `CORS_ALLOWED_ORIGINS=https://your-frontend-name.vercel.app`
+- Redeploy Vercel after changing `VITE_API_URL`
 
 ### Manual Database Setup
 
 If needed, you can run management commands:
 
 ```bash
-railway run python backend/manage.py migrate
-railway run python backend/manage.py createsuperuser
-railway run python backend/manage.py seed
+railway run python manage.py migrate
+railway run python manage.py createsuperuser
 ```
 
 ## Environment Variables Reference
@@ -136,17 +144,18 @@ railway run python backend/manage.py seed
 | `SECRET_KEY` | Required | Django secret key (generate random) |
 | `ALLOWED_HOSTS` | localhost | Comma-separated allowed domains |
 | `DATABASE_URL` | Auto | PostgreSQL connection string (auto-set by Railway) |
-| `CORS_ALLOWED_ORIGINS` | localhost:3000 | Allowed CORS origins |
-| `VITE_API_URL` | . | Frontend API URL |
+| `CORS_ALLOWED_ORIGINS` | localhost dev URLs | Vercel frontend origins allowed to call the API |
 | `SECURE_SSL_REDIRECT` | False | Force HTTPS redirect |
 | `SESSION_COOKIE_SECURE` | False | Only send cookies over HTTPS |
 | `CSRF_COOKIE_SECURE` | False | CSRF token only over HTTPS |
+| `VITE_API_URL` | localhost backend | Vercel frontend API base URL |
 
 ## File Structure
 
-- `Procfile` - Defines how Railway runs the app
-- `railway.json` / `railway.toml` - Railway configuration
-- `build.sh` - Build script (runs on deployment)
+- `Dockerfile` - Builds only the Django backend for Railway
+- `railway.json` - Railway backend configuration
+- `start.sh` - Runs migrations and starts Gunicorn on Railway's `$PORT`
+- `frontend/vercel.json` - Vercel build and SPA routing configuration
 - `.env.example` - Environment variables template
 
 ## Local Development
