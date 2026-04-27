@@ -1,4 +1,3 @@
-# AI Explainer
 
 ### 1. The State Machine
 The state machine lives in the `KYCSubmission` model in `backend/kyc/models.py`.
