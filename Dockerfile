@@ -41,8 +41,9 @@ RUN mkdir -p staticfiles/dist && cp -r dist/* staticfiles/dist/ 2>/dev/null || t
 
 WORKDIR /app
 
-# Create startup script
-RUN echo '#!/bin/bash\nset -e\ncd /app/backend\npython manage.py migrate --noinput\nexec gunicorn playto_pay.wsgi --bind 0.0.0.0:8000 --log-file -\n' > /app/start.sh && chmod +x /app/start.sh
+# Copy startup script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Expose port
 EXPOSE 8000

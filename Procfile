@@ -1,1 +1,1 @@
-web: gunicorn playto_pay.wsgi --bind 0.0.0.0:8000 --log-file -
+web: bash /app/start.sh
