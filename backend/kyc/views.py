@@ -2,10 +2,10 @@ from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import User, KYCSubmission, KYCDocument, Notification
-from .serializers import UserSerializer, KYCSubmissionSerializer, KYCDocumentSerializer, NotificationSerializer
+from .models import User, KYCSubmission
+from .serializers import UserSerializer, KYCSubmissionSerializer, KYCDocumentSerializer
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Avg, F
+from django.db.models import Avg, F
 from django.utils import timezone
 from datetime import timedelta
 from rest_framework.authtoken.models import Token

@@ -29,7 +29,7 @@ A small, working version of a KYC onboarding service for Indian agencies and fre
    ```
 5. Seed the database with test users:
    ```bash
-   python seed.py
+   python manage.py seed_test_data
    ```
 6. Start the backend server:
    ```bash
@@ -50,18 +50,11 @@ A small, working version of a KYC onboarding service for Indian agencies and fre
    npm run dev
    ```
 
-## Deployment
-
-- Deploy the backend service to Railway from the repository root. Railway uses `railway.json`, the root `Dockerfile`, and `start.sh`.
-- Deploy the frontend service to Vercel with `frontend` as the project root. Vercel uses `frontend/vercel.json`.
-- Set `VITE_API_URL` in Vercel to your Railway backend URL, for example `https://your-backend-name.up.railway.app`.
-- Set `CORS_ALLOWED_ORIGINS` in Railway to your Vercel frontend URL.
-
-See `RAILWAY_DEPLOYMENT.md` for the full step-by-step flow.
 
 ## Test Data
-The seed script creates the following users (Password for all is `password123`):
+The seed command creates the following users (password for all is `password123`). Railway also runs this command during backend startup.
 - **Reviewer**: `reviewer1`
+- **Reviewer**: `reviewer2`
 - **Merchant (Draft)**: `merchant_draft`
 - **Merchant (Under Review, At Risk)**: `merchant_review`
 - **Merchant (Submitted)**: `merchant_submitted`

@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import User, KYCSubmission, KYCDocument, Notification
-from django.core.exceptions import ValidationError
+from .models import User, KYCSubmission, KYCDocument
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -44,8 +43,3 @@ class KYCSubmissionSerializer(serializers.ModelSerializer):
             'rejection_reason', 'created_at', 'updated_at', 'documents', 'is_at_risk'
         )
         read_only_fields = ('status', 'rejection_reason', 'created_at', 'updated_at')
-
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = '__all__'
