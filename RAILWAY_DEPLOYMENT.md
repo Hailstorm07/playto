@@ -55,6 +55,26 @@ SESSION_COOKIE_SECURE=True
 CSRF_COOKIE_SECURE=True
 ```
 
+For Vercel preview URLs, either add the exact preview URL to `CORS_ALLOWED_ORIGINS` or add a regex in `CORS_ALLOWED_ORIGIN_REGEXES`.
+
+For example, this deployed frontend:
+
+```
+https://playto-44bq3urzo-abhisheks-projects-fd56eea4.vercel.app
+```
+
+must be allowed on Railway:
+
+```
+CORS_ALLOWED_ORIGINS=https://playto-44bq3urzo-abhisheks-projects-fd56eea4.vercel.app
+```
+
+If you want to allow all preview URLs for this Vercel project/team, use:
+
+```
+CORS_ALLOWED_ORIGIN_REGEXES=^https://playto-[a-z0-9]+-abhisheks-projects-fd56eea4\.vercel\.app$
+```
+
 **To generate a SECRET_KEY:**
 ```python
 python -c "import secrets; print(secrets.token_urlsafe(50))"
