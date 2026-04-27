@@ -55,6 +55,8 @@ SESSION_COOKIE_SECURE=True
 CSRF_COOKIE_SECURE=True
 ```
 
+`SECURE_SSL_REDIRECT=True` is safe behind Railway because Django is configured to trust Railway's `X-Forwarded-Proto` header. If you deploy before that code is live and see `ERR_TOO_MANY_REDIRECTS`, temporarily set `SECURE_SSL_REDIRECT=False`, redeploy, then turn it back on after this settings change is deployed.
+
 For Vercel preview URLs, either add the exact preview URL to `CORS_ALLOWED_ORIGINS` or add a regex in `CORS_ALLOWED_ORIGIN_REGEXES`.
 
 For example, this deployed frontend:
@@ -146,6 +148,10 @@ Redeploy the Railway backend after changing variables.
 - Verify Vercel has `VITE_API_URL=https://your-backend-name.up.railway.app`
 - Verify Railway has `CORS_ALLOWED_ORIGINS=https://your-frontend-name.vercel.app`
 - Redeploy Vercel after changing `VITE_API_URL`
+
+**Too Many Redirects:**
+- Make sure the latest backend code includes `SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')`
+- If the loop continues, set `SECURE_SSL_REDIRECT=False` in Railway and redeploy
 
 ### Manual Database Setup
 
